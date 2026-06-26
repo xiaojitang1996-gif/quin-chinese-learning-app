@@ -19,6 +19,7 @@ import { Button, Card, Stat } from "./components/ui";
 import { HSK_LEVELS, getSentencesByLevel, getWordsByLevel, sentences, words } from "./data/hsk";
 import { createTranslator } from "./i18n/translations";
 import { getVocabularyExample } from "./lib/examples";
+import { getSentenceKeywords } from "./lib/sentenceKeywords";
 import { getSessionShuffledItems } from "./lib/sessionShuffle";
 import { speakChinese } from "./lib/speech";
 import { clampLevel, clearProgress, loadProgress, saveProgress } from "./lib/storage";
@@ -583,6 +584,7 @@ function SentencePractice({ level, t }: { level: HskLevel; t: ReturnType<typeof 
   const [index, setIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const item = items[index] ?? items[0];
+  const focusKeywords = useMemo(() => getSentenceKeywords(item.chinese, item.level, words), [item]);
 
   return (
     <Card className="study-card sentence-card" onClick={() => setRevealed(true)}>
@@ -599,16 +601,18 @@ function SentencePractice({ level, t }: { level: HskLevel; t: ReturnType<typeof 
         <div className="answer-block">
           <p className="pinyin">{item.pinyin}</p>
           <p>{item.vietnamese}</p>
-          <div className="keyword-list">
-            {item.keywords.map((keyword) => (
-              <button key={keyword} type="button" onClick={(event) => {
-                event.stopPropagation();
-                speakChinese(keyword);
-              }}>
-                {keyword}
-              </button>
-            ))}
-          </div>
+          {focusKeywords.length > 0 && (
+            <div className="keyword-list">
+              {focusKeywords.map((keyword) => (
+                <button key={keyword} type="button" onClick={(event) => {
+                  event.stopPropagation();
+                  speakChinese(keyword);
+                }}>
+                  {keyword}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
       <div className="button-row">
