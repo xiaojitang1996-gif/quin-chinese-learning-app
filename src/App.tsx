@@ -202,6 +202,7 @@ function HomePage({
               }}
             >
               <span>{level}</span>
+              <small>{getWordsByLevel(level).length} {t("wordsUnit")}</small>
               <strong>{progress.levelProgress[level]}%</strong>
             </button>
           ))}
@@ -245,6 +246,7 @@ function HskPage({
       <Card className="level-hero">
         <p>{t("hskPath")}</p>
         <h2>{level}</h2>
+        <p className="level-counts">{getWordsByLevel(level).length} {t("wordsUnit")} · {getSentencesByLevel(level).length} {t("sentencesUnit")}</p>
         <div className="progress-track">
           <span style={{ width: `${progress.levelProgress[level]}%` }} />
         </div>
@@ -449,9 +451,9 @@ function RecognitionPractice({
   const [picked, setPicked] = useState<string | null>(null);
   const item = items[index] ?? items[0];
   const choices = useMemo(() => {
-    const pool = words.filter((word) => word.id !== item.id).slice(0, 8);
+    const pool = items.filter((word) => word.id !== item.id).slice(0, 8);
     return [item, ...pool.slice(0, 3)].sort((a, b) => a.hanzi.localeCompare(b.hanzi, "zh-Hans-CN"));
-  }, [item]);
+  }, [item, items]);
   const stat = progress.recognitionStats[level] ?? { correct: 0, total: 0 };
   const isCorrect = picked === item.id;
 

@@ -336,13 +336,25 @@ button {
 }
 
 .level-card span,
+.level-card small,
 .level-card strong {
   display: block;
 }
 
+.level-card small {
+  margin-top: 10px;
+  color: #8f7873;
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .level-card strong {
-  margin-top: 22px;
+  margin-top: 14px;
   font-size: 17px;
+}
+
+.level-card.active small {
+  color: #b91d3d;
 }
 
 .segmented-levels,
@@ -387,6 +399,12 @@ button {
 .level-hero p,
 .level-hero small {
   color: rgba(255, 255, 255, 0.74);
+}
+
+.level-hero .level-counts {
+  margin: 8px 0 0;
+  color: rgba(255, 255, 255, 0.86);
+  font-weight: 800;
 }
 
 .progress-track {

@@ -53,7 +53,9 @@ const dictionaries = {
     resetDone: "Đã xóa tiến độ học.",
     allLevels: "Tất cả cấp độ",
     start: "Bắt đầu",
-    miniLibrary: "Thư viện mẫu đã sẵn sàng để mở rộng thành bộ HSK đầy đủ.",
+    wordsUnit: "từ",
+    sentencesUnit: "câu",
+    miniLibrary: "Thư viện HSK1-6 có 5000 từ và nhiều thẻ câu để luyện lâu dài.",
     pwaTip: "Có thể thêm vào màn hình chính trên iPhone từ nút Chia sẻ của Safari."
   },
   zh: {
@@ -108,7 +110,9 @@ const dictionaries = {
     resetDone: "学习记录已清除。",
     allLevels: "全部等级",
     start: "开始",
-    miniLibrary: "示例学习库已按完整 HSK 扩展方式设计。",
+    wordsUnit: "词",
+    sentencesUnit: "句",
+    miniLibrary: "HSK1-6 已扩展为 5000 个词条和大量句子卡。",
     pwaTip: "可在 iPhone Safari 分享菜单中添加到主屏幕。"
   }
 } satisfies Record<AppLanguage, Record<string, string>>;
