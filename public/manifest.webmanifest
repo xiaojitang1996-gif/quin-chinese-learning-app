@@ -1,0 +1,18 @@
+{
+  "name": "QUIN Chinese Learning App",
+  "short_name": "QUIN 中文",
+  "description": "iPhone-first Chinese learning assistant for HSK vocabulary, hanzi writing, recognition, and sentences.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#fff7f6",
+  "theme_color": "#fff7f6",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "pwa-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
