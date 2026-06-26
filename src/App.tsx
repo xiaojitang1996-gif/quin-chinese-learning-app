@@ -16,8 +16,10 @@ import { BottomNav } from "./components/BottomNav";
 import { CharacterWriter } from "./components/CharacterWriter";
 import { SpeakButton, SpeakableText } from "./components/SpeakableText";
 import { Button, Card, Stat } from "./components/ui";
-import { HSK_LEVELS, getSentencesByLevel, getWordsByLevel, words } from "./data/hsk";
+import { HSK_LEVELS, getSentencesByLevel, getWordsByLevel, sentences, words } from "./data/hsk";
 import { createTranslator } from "./i18n/translations";
+import { getVocabularyExample } from "./lib/examples";
+import { getSessionShuffledItems } from "./lib/sessionShuffle";
 import { speakChinese } from "./lib/speech";
 import { clampLevel, clearProgress, loadProgress, saveProgress } from "./lib/storage";
 import type { AppLanguage, HskLevel, Page, StudyMode, StudyProgress, WordItem } from "./types";
@@ -383,10 +385,11 @@ function VocabularyPractice({
   setProgress: (next: StudyProgress | ((current: StudyProgress) => StudyProgress)) => void;
   t: ReturnType<typeof createTranslator>;
 }) {
-  const items = getWordsByLevel(level);
+  const items = useMemo(() => getSessionShuffledItems(getWordsByLevel(level), `vocabulary-${level}`), [level]);
   const [index, setIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
   const item = items[index] ?? items[0];
+  const example = useMemo(() => getVocabularyExample(item, sentences), [item]);
   const learned = items.filter((word) => progress.masteredWordIds.includes(word.id) || progress.reviewWordIds.includes(word.id)).length;
 
   function mark(id: string, status: "mastered" | "review") {
@@ -422,9 +425,9 @@ function VocabularyPractice({
       {showAnswer && (
         <div className="answer-block">
           <p><strong>{t("meaning")}:</strong> {item.vietnamese}</p>
-          <p><strong>{t("example")}:</strong> <SpeakableText text={item.example} /></p>
-          <p>{item.examplePinyin}</p>
-          <p>{item.exampleVietnamese}</p>
+          <p><strong>{t("example")}:</strong> <SpeakableText text={example.example} /></p>
+          <p>{example.examplePinyin}</p>
+          <p>{example.exampleVietnamese}</p>
         </div>
       )}
       <div className="button-row">
@@ -458,7 +461,7 @@ function WritingPractice({
   setProgress: (next: StudyProgress | ((current: StudyProgress) => StudyProgress)) => void;
   t: ReturnType<typeof createTranslator>;
 }) {
-  const items = getWordsByLevel(level);
+  const items = useMemo(() => getSessionShuffledItems(getWordsByLevel(level), `writing-${level}`), [level]);
   const [index, setIndex] = useState(0);
   const item = items[index] ?? items[0];
   const character = item.hanzi[0];
@@ -507,7 +510,7 @@ function RecognitionPractice({
   setProgress: (next: StudyProgress | ((current: StudyProgress) => StudyProgress)) => void;
   t: ReturnType<typeof createTranslator>;
 }) {
-  const items = getWordsByLevel(level);
+  const items = useMemo(() => getSessionShuffledItems(getWordsByLevel(level), `recognition-${level}`), [level]);
   const [index, setIndex] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
   const item = items[index] ?? items[0];
@@ -576,7 +579,7 @@ function RecognitionPractice({
 }
 
 function SentencePractice({ level, t }: { level: HskLevel; t: ReturnType<typeof createTranslator> }) {
-  const items = getSentencesByLevel(level);
+  const items = useMemo(() => getSessionShuffledItems(getSentencesByLevel(level), `sentences-${level}`), [level]);
   const [index, setIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const item = items[index] ?? items[0];
