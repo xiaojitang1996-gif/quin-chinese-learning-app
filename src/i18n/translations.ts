@@ -33,6 +33,8 @@ const dictionaries = {
     progress: "Tiến độ",
     meaning: "Nghĩa",
     chooseAnswer: "Chọn đáp án đúng",
+    chooseMeaning: "Chọn nghĩa tiếng Việt đúng",
+    choosePinyin: "Chọn pinyin đúng",
     correct: "Chính xác",
     wrong: "Chưa đúng",
     correctAnswer: "Đáp án đúng",
@@ -55,7 +57,10 @@ const dictionaries = {
     start: "Bắt đầu",
     wordsUnit: "từ",
     sentencesUnit: "câu",
-    miniLibrary: "Thư viện HSK1-6 có 5000 từ và nhiều thẻ câu để luyện lâu dài.",
+    speak: "Nghe phát âm",
+    speakSentence: "Nghe cả câu",
+    tapCharacterToHear: "Chạm từng chữ để nghe phát âm.",
+    miniLibrary: "Thư viện HSK1-6 có 5000 từ và nhiều câu song ngữ để luyện lâu dài.",
     pwaTip: "Có thể thêm vào màn hình chính trên iPhone từ nút Chia sẻ của Safari."
   },
   zh: {
@@ -90,6 +95,8 @@ const dictionaries = {
     progress: "进度",
     meaning: "释义",
     chooseAnswer: "选择正确答案",
+    chooseMeaning: "选择正确的越南语意思",
+    choosePinyin: "选择正确拼音",
     correct: "答对了",
     wrong: "还不对",
     correctAnswer: "正确答案",
@@ -112,7 +119,10 @@ const dictionaries = {
     start: "开始",
     wordsUnit: "词",
     sentencesUnit: "句",
-    miniLibrary: "HSK1-6 已扩展为 5000 个词条和大量句子卡。",
+    speak: "听发音",
+    speakSentence: "朗读整句",
+    tapCharacterToHear: "点击每个汉字可听单字发音。",
+    miniLibrary: "HSK1-6 已扩展为 5000 个词条和大量中越双语句子。",
     pwaTip: "可在 iPhone Safari 分享菜单中添加到主屏幕。"
   }
 } satisfies Record<AppLanguage, Record<string, string>>;

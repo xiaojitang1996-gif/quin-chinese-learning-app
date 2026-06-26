@@ -1,11 +1,12 @@
 import type { HskLevel } from "../types";
-import { generatedSentences, generatedWords } from "./generated-hsk";
+import { generatedWords } from "./generated-hsk";
+import { tatoebaSentences } from "./tatoeba-sentences";
 
 export const HSK_LEVELS: HskLevel[] = ["HSK1", "HSK2", "HSK3", "HSK4", "HSK5", "HSK6"];
 
 export const words = generatedWords;
 
-export const sentences = generatedSentences;
+export const sentences = tatoebaSentences;
 
 export function getWordsByLevel(level: HskLevel) {
   return words.filter((word) => word.level === level);

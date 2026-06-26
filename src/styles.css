@@ -476,6 +476,75 @@ button {
   color: #2f2423;
 }
 
+.speakable-hanzi {
+  width: 100%;
+  position: relative;
+  border: 0;
+  padding: 0 0 8px;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.speakable-hanzi svg {
+  position: absolute;
+  right: 24%;
+  bottom: 4px;
+  color: #f04468;
+}
+
+.inline-hanzi-speak {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  padding: 0;
+  color: #2f2423;
+  background: transparent;
+  cursor: pointer;
+}
+
+.inline-hanzi-speak svg {
+  color: #f04468;
+}
+
+.speak-button {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #f5c9d2;
+  border-radius: 999px;
+  padding: 0 12px;
+  color: #f04468;
+  background: #fff7f6;
+  font-weight: 850;
+}
+
+.speakable-text {
+  display: inline;
+  color: inherit;
+}
+
+.speakable-char {
+  display: inline;
+  border: 0;
+  border-radius: 8px;
+  margin: 0;
+  padding: 0 1px;
+  font: inherit;
+  line-height: inherit;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: rgba(240, 68, 104, 0.16);
+}
+
+.speakable-char:active {
+  color: #f04468;
+  background: #ffe8ed;
+}
+
 .pinyin {
   margin: 0;
   color: #f04468;
@@ -613,17 +682,28 @@ button {
 
 .choice {
   min-height: 62px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
   gap: 12px;
   border-radius: 18px;
   padding: 12px 14px;
   background: #fff7f6;
+  text-align: left;
 }
 
 .choice strong {
   color: #f04468;
+  line-height: 1.3;
+}
+
+.choice span {
+  max-width: 112px;
+  color: #8f7873;
+  font-size: 12px;
+  font-weight: 850;
+  line-height: 1.35;
+  text-align: right;
 }
 
 .choice.selected {
@@ -657,6 +737,16 @@ button {
   line-height: 1.2;
 }
 
+.sentence-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  color: #8f7873;
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .keyword-list {
   display: flex;
   gap: 8px;
@@ -664,12 +754,14 @@ button {
   margin-top: 12px;
 }
 
-.keyword-list span {
+.keyword-list button {
   border-radius: 999px;
+  border: 0;
   padding: 8px 12px;
   color: #1d5f4c;
   background: #ddf7ed;
   font-weight: 850;
+  cursor: pointer;
 }
 
 .review-row {

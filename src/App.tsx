@@ -9,13 +9,16 @@ import {
   Eye,
   Languages,
   PenLine,
-  RefreshCcw
+  RefreshCcw,
+  Volume2
 } from "lucide-react";
 import { BottomNav } from "./components/BottomNav";
 import { CharacterWriter } from "./components/CharacterWriter";
+import { SpeakButton, SpeakableText } from "./components/SpeakableText";
 import { Button, Card, Stat } from "./components/ui";
 import { HSK_LEVELS, getSentencesByLevel, getWordsByLevel, words } from "./data/hsk";
 import { createTranslator } from "./i18n/translations";
+import { speakChinese } from "./lib/speech";
 import { clampLevel, clearProgress, loadProgress, saveProgress } from "./lib/storage";
 import type { AppLanguage, HskLevel, Page, StudyMode, StudyProgress, WordItem } from "./types";
 
@@ -33,6 +36,58 @@ function uniq<T>(items: T[]) {
 function percent(part: number, total: number) {
   if (!total) return 0;
   return Math.round((part / total) * 100);
+}
+
+function plainPinyin(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/ü/g, "u")
+    .replace(/[^a-zA-Z ]/g, "")
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(Boolean);
+}
+
+function chineseChars(value: string) {
+  return Array.from(value).filter((char) => /[\u3400-\u9fff]/.test(char));
+}
+
+function hashText(value: string) {
+  return Array.from(value).reduce((hash, char) => (hash * 31 + char.charCodeAt(0)) >>> 0, 2166136261);
+}
+
+function recognitionScore(target: WordItem, candidate: WordItem, targetIndex: number, candidateIndex: number) {
+  const targetChars = chineseChars(target.hanzi);
+  const candidateChars = chineseChars(candidate.hanzi);
+  const sharedChars = candidateChars.filter((char) => targetChars.includes(char)).length;
+  const targetPinyin = plainPinyin(target.pinyin);
+  const candidatePinyin = plainPinyin(candidate.pinyin);
+  const sharedSyllables = candidatePinyin.filter((syllable) => targetPinyin.includes(syllable)).length;
+  const lengthGap = Math.abs(targetChars.length - candidateChars.length);
+  const indexGap = Math.abs(targetIndex - candidateIndex);
+
+  let score = Math.max(0, 24 - lengthGap * 7);
+  score += sharedChars * 18;
+  score += sharedSyllables * 14;
+  if (targetChars[0] && targetChars[0] === candidateChars[0]) score += 18;
+  if (targetChars[targetChars.length - 1] && targetChars[targetChars.length - 1] === candidateChars[candidateChars.length - 1]) score += 12;
+  if (targetPinyin[0] && targetPinyin[0] === candidatePinyin[0]) score += 20;
+  if (targetPinyin[0]?.[0] && targetPinyin[0][0] === candidatePinyin[0]?.[0]) score += 8;
+  score += Math.max(0, 12 - Math.floor(indexGap / 8));
+  return score;
+}
+
+function getRecognitionChoices(item: WordItem, items: WordItem[]) {
+  const targetIndex = items.findIndex((word) => word.id === item.id);
+  const ranked = items
+    .map((word, index) => ({ word, score: word.id === item.id ? -1 : recognitionScore(item, word, targetIndex, index) }))
+    .filter(({ score }) => score >= 0)
+    .sort((a, b) => b.score - a.score || a.word.hanzi.localeCompare(b.word.hanzi, "zh-Hans-CN"));
+
+  return [item, ...ranked.slice(0, 3).map(({ word }) => word)].sort(
+    (a, b) => hashText(`${item.id}-${a.id}`) - hashText(`${item.id}-${b.id}`)
+  );
 }
 
 export default function App() {
@@ -359,12 +414,15 @@ function VocabularyPractice({
         <span>{index + 1}/{items.length}</span>
         <span>{t("progress")} {percent(learned, items.length)}%</span>
       </div>
-      <div className="hanzi-display">{item.hanzi}</div>
+      <button className="hanzi-display speakable-hanzi" type="button" onClick={() => speakChinese(item.hanzi)} aria-label={t("speak")}>
+        {item.hanzi}
+        <Volume2 size={22} />
+      </button>
       <p className="pinyin">{item.pinyin}</p>
       {showAnswer && (
         <div className="answer-block">
           <p><strong>{t("meaning")}:</strong> {item.vietnamese}</p>
-          <p><strong>{t("example")}:</strong> {item.example}</p>
+          <p><strong>{t("example")}:</strong> <SpeakableText text={item.example} /></p>
           <p>{item.examplePinyin}</p>
           <p>{item.exampleVietnamese}</p>
         </div>
@@ -422,7 +480,10 @@ function WritingPractice({
     <Card className="study-card writing-card">
       <div className="word-strip">
         <div>
-          <strong>{item.hanzi}</strong>
+          <button className="inline-hanzi-speak" type="button" onClick={() => speakChinese(item.hanzi)} aria-label={t("speak")}>
+            <strong>{item.hanzi}</strong>
+            <Volume2 size={16} />
+          </button>
           <span>{item.pinyin}</span>
         </div>
         <p>{item.vietnamese}</p>
@@ -450,10 +511,8 @@ function RecognitionPractice({
   const [index, setIndex] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
   const item = items[index] ?? items[0];
-  const choices = useMemo(() => {
-    const pool = items.filter((word) => word.id !== item.id).slice(0, 8);
-    return [item, ...pool.slice(0, 3)].sort((a, b) => a.hanzi.localeCompare(b.hanzi, "zh-Hans-CN"));
-  }, [item, items]);
+  const answerMode = hashText(item.id) % 2 === 0 ? "pinyin" : "meaning";
+  const choices = useMemo(() => getRecognitionChoices(item, items), [item, items]);
   const stat = progress.recognitionStats[level] ?? { correct: 0, total: 0 };
   const isCorrect = picked === item.id;
 
@@ -481,8 +540,11 @@ function RecognitionPractice({
         <span>{t("accuracy")} {percent(stat.correct, stat.total)}%</span>
         <span>{stat.correct}/{stat.total}</span>
       </div>
-      <p className="soft-label">{t("chooseAnswer")}</p>
-      <div className="hanzi-display">{item.hanzi}</div>
+      <p className="soft-label">{answerMode === "pinyin" ? t("choosePinyin") : t("chooseMeaning")}</p>
+      <button className="hanzi-display speakable-hanzi" type="button" onClick={() => speakChinese(item.hanzi)} aria-label={t("speak")}>
+        {item.hanzi}
+        <Volume2 size={22} />
+      </button>
       <div className="choice-list">
         {choices.map((choice) => {
           const selected = picked === choice.id;
@@ -494,8 +556,8 @@ function RecognitionPractice({
               className={`choice ${selected ? "selected" : ""} ${reveal ? "correct" : ""}`}
               onClick={() => choose(choice)}
             >
-              <strong>{choice.pinyin}</strong>
-              <span>{choice.vietnamese}</span>
+              <strong>{answerMode === "pinyin" ? choice.pinyin : choice.vietnamese}</strong>
+              <span>{picked ? (answerMode === "pinyin" ? choice.vietnamese : choice.pinyin) : t("chooseAnswer")}</span>
             </button>
           );
         })}
@@ -525,13 +587,24 @@ function SentencePractice({ level, t }: { level: HskLevel; t: ReturnType<typeof 
         <span>{index + 1}/{items.length}</span>
         <span>{revealed ? t("hideAnswer") : t("tapToReveal")}</span>
       </div>
-      <h2>{item.chinese}</h2>
+      <div className="sentence-tools">
+        <SpeakButton text={item.chinese} label={t("speakSentence")} />
+        <span>{t("tapCharacterToHear")}</span>
+      </div>
+      <h2><SpeakableText text={item.chinese} /></h2>
       {revealed && (
         <div className="answer-block">
           <p className="pinyin">{item.pinyin}</p>
           <p>{item.vietnamese}</p>
           <div className="keyword-list">
-            {item.keywords.map((keyword) => <span key={keyword}>{keyword}</span>)}
+            {item.keywords.map((keyword) => (
+              <button key={keyword} type="button" onClick={(event) => {
+                event.stopPropagation();
+                speakChinese(keyword);
+              }}>
+                {keyword}
+              </button>
+            ))}
           </div>
         </div>
       )}
